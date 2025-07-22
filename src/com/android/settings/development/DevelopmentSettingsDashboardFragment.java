@@ -120,6 +120,7 @@ public class DevelopmentSettingsDashboardFragment extends RestrictedDashboardFra
             new BluetoothA2dpConfigStore();
 
     private static final String KEYBOX_DATA_KEY = "keybox_data_setting";
+    private static final String PIF_DATA_KEY = "pif_data_setting";
 
     private boolean mIsAvailable = true;
     private boolean mIsBiometricsAuthenticated;
@@ -128,7 +129,9 @@ public class DevelopmentSettingsDashboardFragment extends RestrictedDashboardFra
     private List<AbstractPreferenceController> mPreferenceControllers = new ArrayList<>();
     private BluetoothA2dp mBluetoothA2dp;
     private ActivityResultLauncher<Intent> mKeyboxFilePickerLauncher;
+    private ActivityResultLauncher<Intent> mPifFilePickerLauncher;
     private KeyboxDataPreference mKeyboxDataPreference;
+    private PifDataPreference mPifDataPreference;
 
     private final BroadcastReceiver mEnableAdbReceiver = new BroadcastReceiver() {
         @Override
@@ -293,6 +296,19 @@ public class DevelopmentSettingsDashboardFragment extends RestrictedDashboardFra
                 }
             }
         );
+
+        mPifFilePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    Preference pref = findPreference(PIF_DATA_KEY);
+                    if (pref instanceof PifDataPreference) {
+                        ((PifDataPreference) pref).handleFileSelected(uri);
+                    }
+                }
+            }
+        );
     }
 
     @Override
@@ -302,6 +318,11 @@ public class DevelopmentSettingsDashboardFragment extends RestrictedDashboardFra
         mKeyboxDataPreference = findPreference(KEYBOX_DATA_KEY);
         if (mKeyboxDataPreference != null) {
             mKeyboxDataPreference.setFilePickerLauncher(mKeyboxFilePickerLauncher);
+        }
+
+        mPifDataPreference = findPreference(PIF_DATA_KEY);
+        if (mPifDataPreference != null) {
+            mPifDataPreference.setFilePickerLauncher(mPifFilePickerLauncher);
         }
     }
 
